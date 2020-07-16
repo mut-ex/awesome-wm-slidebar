@@ -301,7 +301,7 @@ local function redo_bar(o)
     create_or_update_callbacks(o)
 end
 
-function slidebar:new(args)
+function slidebar.new(args)
     local self = args or {}
     self.__data = {
         ["bg"] = "#282a36",
