@@ -281,7 +281,6 @@ local function calc_bar_geometry(o)
 end
 
 local function calc_screen_dims(o)
-    local screen_width, screen_height
     if o.screen then
         o.screen_width = o.screen.geometry.width
         o.screen_height = o.screen.geometry.height
@@ -292,6 +291,9 @@ local function calc_screen_dims(o)
 end
 
 local function redo_bar(o)
+    if not o.wslidebar and o.wactivator then
+        return
+    end
     calc_screen_dims(o)
     calc_axis_max_limit(o)
     calc_bar_geometry(o)
@@ -301,101 +303,106 @@ local function redo_bar(o)
     create_or_update_callbacks(o)
 end
 
-function slidebar:new(args)
-    local self = args or {}
-    self.__data = {
-        ["bg"] = "#282a36",
-        ["easing"] = 2,
-        ["hide_delay"] = 0.5,
-        ["position"] = "top",
-        ["screen"] = nil,
-        ["show_delay"] = 0.25,
-        ["size"] = 40,
-        ["size_activator"] = 1,
+local slidebar_instance_mt = {
+    __index = function(self, k)
+        return self.__data[k]
+
+    end,
+
+    __newindex = function(self, prop, val)
+        local dat = self.__data
+        if prop == "bg" then
+            self.__data.bg = val
+            if self.__data.wslidebar then
+                self.__data.wslidebar.bg = val
+            end
+            return
+        end
+
+        if prop == "easing" then
+            if val == self.__data.easing then
+                return
+            end
+            self.__data.easing = val
+            create_or_update_callbacks(self)
+            return
+        end
+
+        if prop == "hide_delay" then
+            self.__data.hide_delay = val
+            return
+        end
+
+        if prop == "screen" then
+            if val == self.__data.screen then
+                return
+            end
+            self.__data.screen = val
+            redo_bar(self)
+            return
+        end
+
+        if prop == "show_delay" then
+            self.__data.show_delay = val
+            return
+        end
+
+        if prop == "size" then
+            if val == self.__data.size then
+                return
+            end
+            self.__data.size = val
+            redo_bar(self)
+            return
+        end
+
+        if prop == "size_activator" then
+
+            if val == self.__data.size_activator then
+                return
+            end
+            if val > self.__data.size then
+                self.__data.size_activator = self.__data.size
+            else
+                self.__data.size_activator = val
+            end
+            calc_activator_geometry(self)
+            create_or_update_activator(self)
+            return
+        end
+
+        if prop == "position" then
+            if val == self.__data.position then
+                return
+            end
+            self.__data.position = val
+            redo_bar(self)
+            return
+        end
+
+        self.__data[prop] = val
+    end,
+}
+
+function slidebar.new(args)
+    args = args or {}
+    local self = {
+        ["__data"] = {
+            ["bg"] = "#282a36",
+            ["easing"] = 2,
+            ["hide_delay"] = 0.5,
+            ["position"] = "top",
+            ["screen"] = nil,
+            ["show_delay"] = 0.25,
+            ["size"] = 45,
+            ["size_activator"] = 1,
+        },
     }
     setmetatable(self.__data, slidebar)
+    setmetatable(self, slidebar_instance_mt)
     for k, v in pairs(args) do
-        self.__data[k] = v
+        self[k] = v
     end
-
-    setmetatable(
-      self, {
-          __index = function(self, k)
-              return self.__data[k]
-          end,
-
-          __newindex = function(self, prop, val)
-              local dat = self.__data
-              if prop == "bg" then
-                  dat.bg = val
-                  dat.wslidebar.bg = val
-                  return
-              end
-
-              if prop == "easing" then
-                  if val == dat.easing then
-                      return
-                  end
-                  dat.easing = val
-                  create_or_update_callbacks(self)
-                  return
-              end
-
-              if prop == "hide_delay" then
-                  dat.hide_delay = val
-                  return
-              end
-
-              if prop == "screen" then
-                  if val == dat.screen then
-                      return
-                  end
-                  dat.screen = val
-                  redo_bar(self)
-                  return
-              end
-
-              if prop == "show_delay" then
-                  dat.show_delay = val
-                  return
-              end
-
-              if prop == "size" then
-                  if val == dat.size then
-                      return
-                  end
-                  dat.size = val
-                  redo_bar(self)
-                  return
-              end
-
-              if prop == "size_activator" then
-                  if val == dat.size_activator then
-                      return
-                  end
-                  if val > dat.size then
-                      dat.size_activator = dat.size
-                  else
-                      dat.size_activator = val
-                  end
-                  calc_activator_geometry(self)
-                  create_or_update_activator(self)
-                  return
-              end
-
-              if prop == "position" then
-                  if val == dat.position then
-                      return
-                  end
-                  dat.position = val
-                  redo_bar(self)
-                  return
-              end
-
-              self.__data[prop] = val
-          end,
-      })
-
     calc_screen_dims(self)
     calc_axis_max_limit(self)
     calc_bar_geometry(self)
@@ -404,7 +411,6 @@ function slidebar:new(args)
     create_or_update_activator(self)
     create_or_update_callbacks(self)
     connect_signals(self)
-
     return self
 end
 
@@ -415,6 +421,6 @@ end
 return setmetatable(
          slidebar, {
       __call = function(_, ...)
-          return slidebar:new(...)
+          return slidebar.new(...)
       end,
   })
