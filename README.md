@@ -106,6 +106,7 @@ awful.screen.connect_for_each_screen(function(s)
     -- show_delay = 0.25,
     -- hide_delay = 0.5,
     -- easing = 2,
+    -- delta = 1,
 	}
         
     -- Add widgets to the slidebar
@@ -145,9 +146,9 @@ myslidebar.size = 55
 myslidebar.easing = 1
 --...
 
--- Or if accessing the bar from a screen object
-myslidebar.size = 55
-myslidebar.easing = 1
+-- Or if accessing the bar from a screen object 's'
+s.myslidebar.size = 55
+s.myslidebar.easing = 1
 ```
 
 
