@@ -2,8 +2,8 @@ local awful = require("awful")
 local wibox = require("wibox")
 local gears = require("gears")
 
-local slidebar = {}
-slidebar.__index = slidebar
+local Slidebar = {}
+Slidebar.__index = Slidebar
 
 local function over_bar(o)
     local c = mouse.current_wibox
@@ -27,7 +27,7 @@ local function create_or_update_callbacks(o)
     local p = o.position
     local axis = o.axis
     local max = o.max
-    local delta_inc = 1
+    local delta_inc = o.delta
     local limit = o.limit
     local size = o.size
     local easing = o.easing / 1000
@@ -211,7 +211,6 @@ local function create_or_update_activator(o)
     a.width = o.width_activator
     a.x = o.x_activator
     a.y = o.y_activator
-    a.idname = "activator"
 end
 
 local function calc_activator_geometry(o)
@@ -238,7 +237,6 @@ local function create_or_update_bar(o)
     b.width = o.width
     b.x = o.x
     b.y = o.y
-    b.idname = "slideabar"
 end
 
 local function calc_axis_max_limit(o)
@@ -328,6 +326,15 @@ local slidebar_instance_mt = {
             return
         end
 
+        if prop == "delta" then
+            if val == self.__data.delta then
+                return
+            end
+            self.__data.delta = val
+            create_or_update_callbacks(self)
+            return
+        end
+
         if prop == "hide_delay" then
             self.__data.hide_delay = val
             return
@@ -384,21 +391,22 @@ local slidebar_instance_mt = {
     end,
 }
 
-function slidebar.new(args)
+function Slidebar.new(args)
     args = args or {}
     local self = {
         ["__data"] = {
+            ["delta"] = 1,
             ["bg"] = "#282a36",
             ["easing"] = 2,
             ["hide_delay"] = 0.5,
             ["position"] = "top",
             ["screen"] = nil,
             ["show_delay"] = 0.25,
-            ["size"] = 40,
+            ["size"] = 45,
             ["size_activator"] = 1,
         },
     }
-    setmetatable(self.__data, slidebar)
+    setmetatable(self.__data, Slidebar)
     setmetatable(self, slidebar_instance_mt)
     for k, v in pairs(args) do
         self[k] = v
@@ -414,13 +422,13 @@ function slidebar.new(args)
     return self
 end
 
-function slidebar:setup(args)
+function Slidebar:setup(args)
     self.wslidebar:setup(args)
 end
 
 return setmetatable(
-         slidebar, {
+         Slidebar, {
       __call = function(_, ...)
-          return slidebar.new(...)
+          return Slidebar.new(...)
       end,
   })

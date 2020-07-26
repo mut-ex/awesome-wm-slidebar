@@ -39,6 +39,7 @@ local myslidebar = slidebar {
     -- show_delay = 0.25,
     -- hide_delay = 0.5,
     -- easing = 2,
+    -- delta = 1,
 
     -- screen = nil
 }
@@ -52,7 +53,8 @@ The commented out lines show the **default** values for each of the configuratio
 * **size_activator** : The thickness of the activation region, extending from the edge of the screen. Do note that size of the activator region can not be greater than size of the bar
 * **show_delay** : Time in seconds the mouse cursor needs to be within the activation region before the bar slides into view
 * **hide_delay** : Time in seconds to wait before the bar slides out of view once the mouse cursor leaves the bar surface
-* **easing** : Time in **milliseconds** between each step of the slide in/slide out animation
+* **easing** : Time in **milliseconds** between each step of the animation
+* **delta** : Number of pixels the bar should move between each step of the animation. Presently, if the size of the bar isn't a multiple of the delta value, the bar will overshoot.
 * **screen** : In case of a setup with multiple screens, the screen object for the screen the bar should be bound to
 
 
